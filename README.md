@@ -1,3 +1,6 @@
+IMPORTANT:
+CLONED GIT FROM: https://github.com/mohiva/play-silhouette-seed
+
 Silhouette Seed Template
 =====================================
 
