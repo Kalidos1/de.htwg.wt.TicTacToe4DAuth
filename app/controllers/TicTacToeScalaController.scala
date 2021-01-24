@@ -8,9 +8,16 @@ import de.htwg.se.ticTacToe3D.util.Observer
 import play.api.libs.streams.ActorFlow
 import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import akka.stream.Materializer
+import com.mohiva.play.silhouette
+import com.mohiva.play.silhouette.api.Silhouette
+import com.mohiva.play.silhouette.api.actions.SecuredRequest
+import org.webjars.play.WebJarsUtil
+import utils.auth.DefaultEnv
+
+import scala.concurrent.{ ExecutionContext, Future }
 
 @Singleton
-class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit system: ActorSystem, mat: Materializer) extends AbstractController(cc) {
+class TicTacToeScalaController @Inject() (cc: ControllerComponents, silhouette: Silhouette[DefaultEnv])(implicit ec: ExecutionContext, webJarsUtil: WebJarsUtil, assets: AssetsFinder, system: ActorSystem, mat: Materializer) extends AbstractController(cc) {
   val gameController = TicTacToe.controller
   // def tictactoeAsText =  gameController.toString + gameController.statusMessage
 
@@ -51,7 +58,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    * @return TUI + status message
    */
   def players = Action(parse.json) {
-    playersRequest: Request[JsValue] =>
+    implicit playersRequest: Request[JsValue] =>
       {
         val player1 = (playersRequest.body \ "player1").as[String]
         val player2 = (playersRequest.body \ "player2").as[String]
@@ -69,7 +76,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    * @return TUI + status message
    */
   def move = Action(parse.json) {
-    moveRequest: Request[JsValue] =>
+    implicit moveRequest: Request[JsValue] =>
       {
         val row = (moveRequest.body \ "row").as[Int]
         val col = (moveRequest.body \ "col").as[Int]
@@ -94,7 +101,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    *
    * @return TUI + status message
    */
-  def reset = Action {
+  def reset = silhouette.SecuredAction { implicit request =>
     gameController.reset
     Ok(Json.obj(
       "statusMessage" -> gameController.statusMessage,
@@ -107,7 +114,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    *
    * @return TUI + status message
    */
-  def restart = Action {
+  def restart = silhouette.SecuredAction { implicit request =>
     gameController.restart
     Ok(Json.obj(
       "statusMessage" -> gameController.statusMessage,
@@ -120,7 +127,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    *
    * @return TUI + status message
    */
-  def redo = Action {
+  def redo = silhouette.SecuredAction { implicit request =>
     gameController.redo
     Ok(Json.obj(
       "statusMessage" -> gameController.statusMessage,
@@ -133,7 +140,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    *
    * @return TUI + status message
    */
-  def undo = Action {
+  def undo = silhouette.SecuredAction { implicit request =>
     gameController.undo
     Ok(Json.obj(
       "statusMessage" -> gameController.statusMessage,
@@ -171,7 +178,7 @@ class TicTacToeScalaController @Inject() (cc: ControllerComponents)(implicit sys
    *
    * @return
    */
-  def gameToJson = Action {
+  def gameToJson = silhouette.SecuredAction { implicit request =>
     Ok(Json.obj(
       "statusMessage" -> gameController.statusMessage,
       "gridArray" -> createGameArrays
