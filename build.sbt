@@ -6,7 +6,7 @@ name := "play-silhouette-seed"
 
 version := "6.0.0"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.12.7"
 
 resolvers += Resolver.jcenterRepo
 
